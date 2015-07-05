@@ -77,6 +77,24 @@ if [ "$1" = 'mysqld' ]; then
 			fi
 		fi
 
+		# Create a replication user if MYSQL_REPLICA_USER is set
+		# Single user created on master and slaves for ease of use.
+		# Consider creating a different account for each slave.
+
+		if [ "$MYSQL_REPLICA_USER" ]; then
+			if [ -z "$MYSQL_REPLICA_PASS" ]; then
+				echo >&2 'error: MYSQL_REPLICA_USER set, but MYSQL_REPLICA_PASS not set'
+				echo >&2 '  Did you forget to add -e MYSQL_REPLICA_PASS=... ?'
+				exit 1
+			fi
+
+			echo "CREATE USER '"$MYSQL_REPLICA_USER"'@'%' IDENTIFIED BY '"$MYSQL_REPLICA_PASS"' ;" >> "$tempSqlFile"
+			echo "GRANT REPLICATION SLAVE ON \`"$MYSQL_DATABASE"\`.* TO '$MYSQL_REPLICA_USER'@'%' ; " >> "$tempSqlFile"
+
+			# REPLICATION CLIENT privileges are required to get master position
+			echo "GRANT REPLICATION CLIENT ON \`"$MYSQL_DATABASE"\`.* TO '$MYSQL_REPLICA_USER'@'%' ; " >> "$tempSqlFile"
+		fi
+
 		echo 'FLUSH PRIVILEGES ;' >> "$tempSqlFile"
 
 		mysql --protocol=socket -uroot < "$tempSqlFile"
