@@ -88,10 +88,10 @@ if [ "$1" = 'mysqld' ]; then
 			fi
 
 			echo "CREATE USER '"$MYSQL_REPLICA_USER"'@'%' IDENTIFIED BY '"$MYSQL_REPLICA_PASS"' ;" >> "$tempSqlFile"
-			echo "GRANT REPLICATION SLAVE ON \`"$MYSQL_DATABASE"\`.* TO '$MYSQL_REPLICA_USER'@'%' ; " >> "$tempSqlFile"
+			echo "GRANT REPLICATION SLAVE ON *.* TO '$MYSQL_REPLICA_USER'@'%' ; " >> "$tempSqlFile"
 
 			# REPLICATION CLIENT privileges are required to get master position
-			echo "GRANT REPLICATION CLIENT ON \`"$MYSQL_DATABASE"\`.* TO '$MYSQL_REPLICA_USER'@'%' ; " >> "$tempSqlFile"
+			echo "GRANT REPLICATION CLIENT ON *.* TO '$MYSQL_REPLICA_USER'@'%' ; " >> "$tempSqlFile"
 		fi
 
 		# On the slave: point to a master server
